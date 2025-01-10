@@ -1,0 +1,46 @@
+package com.example.employeeapp;
+
+import com.example.employeeapp.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+public class EmployeeController {
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @GetMapping("/")
+    public ModelAndView showForm() {
+        return new ModelAndView("index"); // HTML form in src/main/resources/templates/index.html
+    }
+
+    @PostMapping("/addEmployee")
+    public ModelAndView addEmployee(@RequestParam String name,
+                                    @RequestParam String email,
+                                    @RequestParam String location) {
+        Employee employee = new Employee();
+        employee.setName(name);
+        employee.setEmail(email);
+        employee.setLocation(location);
+        employeeRepository.save(employee);
+        return new ModelAndView("redirect:/");
+    }
+
+    @GetMapping("/displayAll")
+    public ResponseEntity<List<Employee>> getAllEmployees() {
+        return ResponseEntity.ok(employeeRepository.findAll());
+    }
+
+    @GetMapping("/display/{id}")
+    public ResponseEntity<Employee> getEmployeeById(@PathVariable String id) {
+        Optional<Employee> employee = employeeRepository.findById(id);
+        return employee.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+}
